@@ -1,8 +1,25 @@
 angular.module('osmbi', ['ionic','ngCordova'])
 
-.config(function($httpProvider) {
+.config(function($stateProvider,$httpProvider,$urlRouterProvider) {
+
    $httpProvider.defaults.useXDomain = true;
    delete $httpProvider.defaults.headers.common['X-Requested-With'];
+
+   $stateProvider
+   .state('map', {
+	url: "/map",
+	templateUrl: "templates/map.html",
+	controller: 'mapController'
+      }
+    )
+   .state('auth', {
+	url: "/auth",
+	templateUrl: "templates/login.html",
+	controller: 'authController'
+       }
+    );
+    $urlRouterProvider.otherwise('/map');
+
 })
 
 .run(function($ionicPlatform) {
@@ -18,9 +35,9 @@ angular.module('osmbi', ['ionic','ngCordova'])
   });
 })
 
+
 .controller('mapController',function($scope,$http,$cordovaGeolocation,$cordovaNetwork,$cordovaOauth,overpassAPI) {
 
-//.controller('mapController',function($scope,$http,overpassAPI) {
 
     function initMap(x,y,zoom) {
 
@@ -72,7 +89,9 @@ angular.module('osmbi', ['ionic','ngCordova'])
         });
 	
      });
+})
 
+.controller('authController', function($scope,$cordovaOauth) {
     $scope.login = function() {
 	var client_id = 'c27e3a1d9eaed5ff7f95'
 	var client_secret = '9c9d23dd46749808b5a1e93ba1b8ded37eddc463'
