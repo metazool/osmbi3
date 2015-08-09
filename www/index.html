@@ -26,19 +26,11 @@
   </head>
   <body ng-app="osmbi">
 
-    <ion-pane>
-      <ion-header-bar class="bar-stable">
-      </ion-header-bar>
-      <ion-content>
-       <div ng-controller="mapController">
+    <ion-nav-bar class="bar-stable">
+      <ion-nav-back-button>
+      </ion-nav-back-button>
+    </ion-nav-bar>
 
-	{{ lat }}
-	{{ long }}
-	<div id="map">
-	</div>
-	</div>
-
-      </ion-content>
-    </ion-pane>
-  </body>
+    <ion-nav-view></ion-nav-view>  
+</body>
 </html>
