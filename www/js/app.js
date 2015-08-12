@@ -58,7 +58,7 @@ angular.module('osmbi', ['ionic','ngCordova'])
    var watchOptions = {
     frequency : 1000,
     timeout : 3000,
-    enableHighAccuracy: false // may cause errors if true
+    enableHighAccuracy: true // may cause errors if true
   };
 
     $scope.heights = {};  
@@ -73,7 +73,7 @@ angular.module('osmbi', ['ionic','ngCordova'])
         $scope.lat  = position.coords.latitude
         $scope.long = position.coords.longitude
         map.setView([$scope.lat, $scope.long],20);
-	   overpassAPI.search('[bbox][out:json];way;out center;&bbox='+map.getBounds().toBBoxString()).then(function(data) {
+	    overpassAPI.search('[bbox][out:json];way;out center;&bbox='+map.getBounds().toBBoxString()).then(function(data) {
             var places = data.data.elements;
             for (i = 0, len = places.length; i < len; i++) {
                 p = places[i];
@@ -102,7 +102,6 @@ angular.module('osmbi', ['ionic','ngCordova'])
 				{className: p.id,
                                  html:'<div id="'+way_id+'">'+$scope.heights[way_id]+'</div>'});
 			e.target.setIcon(newIcon);
-			//marker.icon.html = $scope.heights[way_id];
 		    });
 		    
                 }
