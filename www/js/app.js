@@ -61,25 +61,27 @@ angular.module('osmbi', ['ionic','ngCordova'])
     enableHighAccuracy: false // may cause errors if true
   };
 
-
-  var watch = $cordovaGeolocation.watchPosition(watchOptions);
-  watch.then(
-    null,
-    function(err) {
-      // error
+    $scope.heights = {};  
+    var watch = $cordovaGeolocation.watchPosition(watchOptions);
+    watch.then(
+       null,
+       function(err) {
+        // error
 	alert(err.message);
-    },
-    function(position) {
-      $scope.lat  = position.coords.latitude
-      $scope.long = position.coords.longitude
-      map.setView([$scope.lat, $scope.long],20);
+      },
+      function(position) {
+        $scope.lat  = position.coords.latitude
+        $scope.long = position.coords.longitude
+        map.setView([$scope.lat, $scope.long],20);
 	   overpassAPI.search('[bbox][out:json];way;out center;&bbox='+map.getBounds().toBBoxString()).then(function(data) {
             var places = data.data.elements;
             for (i = 0, len = places.length; i < len; i++) {
                 p = places[i];
+		// console.log(p);
 		var html = 0;
                 lat = p.center.lat;
                 long = p.center.lon;
+		$scope.heights[p.id] = html;		
                 tags = p.tags;
                 if (tags && tags.hasOwnProperty("building")) {
 		    if (tags.hasOwnProperty("building:levels")) {
@@ -87,11 +89,25 @@ angular.module('osmbi', ['ionic','ngCordova'])
 	            }		
 
                     var myIcon = L.divIcon(
-                                {className: 'my-div-icon',
-                                 html:html});
-                    L.marker([lat, long], {icon: myIcon}).addTo(map);                   
-                  }
+                                {className: p.id,
+                                 html:'<div id="'+p.id+'">'+$scope.heights[p.id]+'</div>'});
+	            
+                    var marker = L.marker([lat, long], {icon: myIcon}).addTo(map)
+		    .on('click',function(e) {
+			var way_id = e.originalEvent.srcElement.id;
+			$scope.heights[way_id] +=1;
+			console.log($scope.heights[way_id]);
+			// leaflet got in angular's way :/
+			var newIcon = L.divIcon( 
+				{className: p.id,
+                                 html:'<div id="'+way_id+'">'+$scope.heights[way_id]+'</div>'});
+			e.target.setIcon(newIcon);
+			//marker.icon.html = $scope.heights[way_id];
+		    });
+		    
                 }
+		$scope.heights[p.id] = html;
+            }
         },
         function(err) {
                 console.log(err);
@@ -100,61 +116,25 @@ angular.module('osmbi', ['ionic','ngCordova'])
      });
 
      // this belongs in its own controller, see below 
-     //$scope.login = function() {
-        //var client_id = 'c27e3a1d9eaed5ff7f95'
-        //var client_secret = '9c9d23dd46749808b5a1e93ba1b8ded37eddc463'
 
-      //  var client_id = 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX'
-       // var client_secret = '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG'
+    var auth = osmAuth({
+        oauth_consumer_key: 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX',
+        oauth_secret: '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG',
+        auto: true // show a login form if the user is not authenticated and
+                // you try to do a call
+   });
 
-//        $cordovaOauth.openstreetmap(client_id,client_secret,[]).then(function(result) {
-            // console.log(JSON.stringify(result));
-     //   }, function(error) {
-     //       console.log(error);
-     //   });
-
-//	var ref = window.open('http://www.openstreetmap.org/oauth/authorize?client_id=' + client_id + '&redirect_uri=http://localhost/callback', '_blank', 'location=no');
-		//$http({method: "post", url: "http://www.openstreetmap.org/oauth/request_token", data: "client_id=" + client_id + "&client_secret=" + client_secret + "&redirect_uri=http://localhost/callback" + "&grant_type=authorization_code" + "&code=" + requestToken })
-        //ref.close();
-
-var auth = osmAuth({
-    oauth_consumer_key: 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX',
-    oauth_secret: '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG',
-    auto: true // show a login form if the user is not authenticated and
-               // you try to do a call
-});
-
- $scope.login = function() {
-    // Signed method call - since `auto` is true above, this will
-    // automatically start an authentication process if the user isn't
-    // authenticated yet.
-    console.log('login');
-    auth.xhr({
-        method: 'GET',
-        path: '/api/0.6/user/details'
-    }, function(err, details) {
-        // details is an XML DOM of user details
-	console.log(details);
-	$scope.authed = 1;
-    });
-};
-    
-
-})
-
-.controller('authController', function($scope,$cordovaOauth,$cordovaNetwork) {
     $scope.login = function() {
+    	auth.xhr({
+            method: 'GET',
+            path: '/api/0.6/user/details'
+    	}, function(err, details) {
+            // details is an XML DOM of user details
+	    console.log(details);
+	    $scope.authed = 1;
+    	});
+    };
 
-	var client_id = 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX'
-	var client_secret = '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG'
-        $cordovaOauth.openstreetmap(client_id,client_secret,[]).then(function(result) {
-            console.log(JSON.stringify(result));
-        }, function(error) {
-            console.log(error);
-        });
-    }  
-   //$scope.network = $cordovaNetwork.getNetwork();
-   //console.log($scope.network);
 })
 
 .factory('overpassAPI', function($http) {
