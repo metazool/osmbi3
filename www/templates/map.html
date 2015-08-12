@@ -1,6 +1,9 @@
 <ion-view view-title="Here">
       <ion-content>
-<button class="button button-block button-calm" ng-click="login()">Login</button>
+
+      <div ng-if="!authed"><button class="button button-block button-calm" ng-click="login()">Login</button></div>
+
+      <div ng-if="authed"><button class="button button-block button-calm" ng-click="save()">Save</button></div>
         <div id="map">
         </div>
 

@@ -49,6 +49,9 @@ angular.module('osmbi', ['ionic','ngCordova'])
     		attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		   }).addTo(map);
 	map.setView([x, y], zoom);
+	map.on('click', function(event) {
+		console.log(event);
+	})
    } 
    initMap(51.5237278,-0.1048208, 20);
 
@@ -74,16 +77,20 @@ angular.module('osmbi', ['ionic','ngCordova'])
             var places = data.data.elements;
             for (i = 0, len = places.length; i < len; i++) {
                 p = places[i];
+		var html = 0;
                 lat = p.center.lat;
                 long = p.center.lon;
                 tags = p.tags;
                 if (tags && tags.hasOwnProperty("building")) {
+		    if (tags.hasOwnProperty("building:levels")) {
+			html = tags['building:levels'];
+	            }		
 
-                var myIcon = L.divIcon(
+                    var myIcon = L.divIcon(
                                 {className: 'my-div-icon',
-                                 html:"yes!"});
-                L.marker([lat, long], {icon: myIcon}).addTo(map);                   
-                }
+                                 html:html});
+                    L.marker([lat, long], {icon: myIcon}).addTo(map);                   
+                  }
                 }
         },
         function(err) {
@@ -93,18 +100,45 @@ angular.module('osmbi', ['ionic','ngCordova'])
      });
 
      // this belongs in its own controller, see below 
-     $scope.login = function() {
+     //$scope.login = function() {
         //var client_id = 'c27e3a1d9eaed5ff7f95'
         //var client_secret = '9c9d23dd46749808b5a1e93ba1b8ded37eddc463'
 
-        var client_id = 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX'
-        var client_secret = '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG'
-        $cordovaOauth.openstreetmap(client_id,client_secret,[]).then(function(result) {
-            console.log(JSON.stringify(result));
-        }, function(error) {
-            console.log(error);
-        });
-    }
+      //  var client_id = 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX'
+       // var client_secret = '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG'
+
+//        $cordovaOauth.openstreetmap(client_id,client_secret,[]).then(function(result) {
+            // console.log(JSON.stringify(result));
+     //   }, function(error) {
+     //       console.log(error);
+     //   });
+
+//	var ref = window.open('http://www.openstreetmap.org/oauth/authorize?client_id=' + client_id + '&redirect_uri=http://localhost/callback', '_blank', 'location=no');
+		//$http({method: "post", url: "http://www.openstreetmap.org/oauth/request_token", data: "client_id=" + client_id + "&client_secret=" + client_secret + "&redirect_uri=http://localhost/callback" + "&grant_type=authorization_code" + "&code=" + requestToken })
+        //ref.close();
+
+var auth = osmAuth({
+    oauth_consumer_key: 'RhPXthrBJX2kpRhj9h9LZrrrMgb38m4KMQ2vtXaX',
+    oauth_secret: '7qAeSPIcF6UHtoO6IaR9dKd9qcmtNRq2h7kuJGeG',
+    auto: true // show a login form if the user is not authenticated and
+               // you try to do a call
+});
+
+ $scope.login = function() {
+    // Signed method call - since `auto` is true above, this will
+    // automatically start an authentication process if the user isn't
+    // authenticated yet.
+    console.log('login');
+    auth.xhr({
+        method: 'GET',
+        path: '/api/0.6/user/details'
+    }, function(err, details) {
+        // details is an XML DOM of user details
+	console.log(details);
+	$scope.authed = 1;
+    });
+};
+    
 
 })
 
