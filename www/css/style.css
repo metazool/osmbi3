@@ -5,6 +5,9 @@
     width: 100%;
 }
 
-#my-div-icon {
-	width:20px;   	
+.my-div-icon {
+    font-size: 150%;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
 }
